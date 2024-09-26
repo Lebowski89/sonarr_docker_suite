@@ -1,0 +1,82 @@
+---
+
+################################
+# API
+################################
+
+sonarr_api_key: []
+
+################################
+# BASICS
+################################
+
+sonarr_basics_name: 'sonarr'
+sonarr_basics_image_repo: 'ghcr.io/hotio/sonarr'
+sonarr_basics_image_tag: 'nightly'
+sonarr_basics_restart_policy: 'unless-stopped'
+
+################################
+# NETWORK
+################################
+
+sonarr_network_backend: 'proxy'  ## allows backend docker communication between sonarr and companion apps, such as recyclarr
+sonarr_network_backend_driver: []  ## only required if network doesn't exist
+sonarr_network_backend_subnet: []  ## only required if network doesn't exist
+
+################################
+# ENV
+################################
+
+sonarr_env_timezone: []
+sonarr_env_puid: []
+sonarr_env_pgid: []
+
+################################
+# PORTS
+################################
+
+sonarr_ports_host: '8989'
+sonarr_ports_cont: '8989'
+
+################################
+# PATHS
+################################
+
+sonarr_paths_folder: '{{ sonarr_basics_name }}'
+sonarr_paths_location: '/opt/{{ sonarr_paths_folder }}'
+
+################################
+# BINDS
+################################
+
+sonarr_volumes_binds_default:
+  - /etc/localtime:/etc/localtime:ro
+  - '{{ sonarr_paths_location }}:/config'
+
+################################
+# AUTHELIA
+################################
+
+sonarr_authelia_name: 'authelia'
+
+################################
+# TRAEFIK
+################################
+
+sonarr_traefik_subdomain: '{{ sonarr_basics_name }}'
+sonarr_traefik_domain: []
+sonarr_traefik_port: '8989'
+sonarr_traefik_themepark_theme: 'hotline'  ## See https://github.com/themepark-dev/theme.park
+
+  ## traefik docker network
+sonarr_traefik_network: 'traefik_proxy'
+sonarr_traefik_network_driver: []  ## only required if network doesn't exist
+sonarr_traefik_network_subnet: []  ## only required if network doesn't exist
+
+################################
+# CLOUDFLARE
+################################
+
+sonarr_cloudflare_record_type: 'A'  ## A (IPV4), AAAA (IPV6), CNAME, etc
+sonarr_cloudflare_proxy: 'true'  ## true for cloudflare DNS SSL
+sonarr_cloudflare_api_token: []

@@ -1,0 +1,33 @@
+---
+
+- name: Apply sonarr-exporter prometheus scrape config
+  ansible.builtin.blockinfile:
+    path: '{{ sonarr_prometheus_paths_location }}/prometheus.yml'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - SONARR-EXPORTER #"
+    block: |
+      {% filter indent(width=2, first=true) %}
+      - job_name: '{{ sonarr_prometheus_exporter_name }}'
+        scrape_interval: 1m
+        static_configs:
+          - targets: ['{{ sonarr_prometheus_exporter_name }}:{{ sonarr_prometheus_exporter_cont_port }}']
+      {% endfilter %}
+  notify:
+    - restart prometheus
+
+- name: Create sonarr prometheus exporter container
+  community.docker.docker_container:
+    name: '{{ sonarr_prometheus_exporter_name }}'
+    image: '{{ sonarr_prometheus_exporter_image_repo }}:{{ sonarr_prometheus_exporter_image_tag }}'
+    command: ["sonarr"]
+    networks: '{{ sonarr_prometheus_exporter_networks }}'
+    env:
+      PUID: '{{ sonarr_prometheus_exporter_env_puid }}'
+      PGID: '{{ sonarr_prometheus_exporter_env_pgid }}'
+      TZ: '{{ sonarr_prometheus_exporter_env_timezone }}'
+      PORT: '{{ sonarr_prometheus_exporter_cont_port }}'
+      URL: 'http://{{ sonarr_basics_name }}:{{ sonarr_ports_cont }}'
+      API_KEY: '{{ sonarr_api_key }}'
+      ENABLE_ADDITIONAL_METRICS: 'true'
+    ports:
+      - '{{ sonarr_prometheus_exporter_host_port }}:{{ sonarr_prometheus_exporter_cont_port }}'
+    restart_policy: '{{ sonarr_prometheus_exporter_restart_policy }}'

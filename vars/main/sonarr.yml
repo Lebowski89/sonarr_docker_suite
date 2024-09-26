@@ -1,0 +1,153 @@
+---
+
+################################
+# API
+################################
+
+sonarr_api_key_is_enabled: '{{ (sonarr_api_key is defined) and
+                               (sonarr_api_key is not none) and
+                               (sonarr_api_key | trim | length > 0) }}'
+
+################################
+# NETWORK
+################################
+
+sonarr_network_backend_is_enabled: '{{ (sonarr_network_backend is defined) and
+                                       (sonarr_network_backend is not none) and
+                                       (sonarr_network_backend | trim | length > 0) and
+                                       (sonarr_network_backend_driver is defined) and
+                                       (sonarr_network_backend_driver is not none) and
+                                       (sonarr_network_backend_driver | trim | length > 0) and
+                                       (sonarr_network_backend_subnet is defined) and
+                                       (sonarr_network_backend_subnet is not none) and
+                                       (sonarr_network_backend_subnet | trim | length > 0) }}'
+
+sonarr_network_default_bind:
+  - name: '{{ sonarr_network_backend }}'
+sonarr_network_postgres_bind:
+  - name: '{{ sonarr_postgres_network }}'
+sonarr_network_traefik_bind:
+  - name: '{{ sonarr_traefik_network }}'
+sonarr_network_prometheus_bind:
+  - name: '{{sonarr_prometheus_network }}'
+
+sonarr_docker_networks: '{{ sonarr_network_default_bind
+                            + (sonarr_network_postgres_bind
+                               if sonarr_postgres_is_enabled
+                               else [])
+                            + (sonarr_network_traefik_bind
+                               if sonarr_traefik_is_enabled
+                               else [])
+                            + (sonarr_network_prometheus_bind
+                               if sonarr_prometheus_is_enabled
+                               else []) }}'
+
+################################
+# BINDS
+################################
+
+sonarr_docker_volumes: '{{ sonarr_volumes_binds_default
+                           + (sonarr_nfs_media_bind
+                              if sonarr_nfs_media_volume_result.exists
+                              else [])
+                           + (sonarr_rclone_qbittorrent_bind
+                              if sonarr_rclone_qbittorrent_volume_result.exists
+                              else []) }}'
+
+################################
+# AUTHELIA
+################################
+
+sonarr_authelia_is_enabled: '{{ (sonarr_authelia_name is defined) and
+                                (sonarr_authelia_name is not none) and
+                                (sonarr_authelia_name | trim | length > 0) }}'
+
+################################
+# TRAEFIK
+################################
+
+sonarr_traefik_is_enabled: '{{ (sonarr_traefik_network is defined) and
+                               (sonarr_traefik_network is not none) and
+                               (sonarr_traefik_network | trim | length > 0) and
+                               (sonarr_traefik_subdomain is defined) and
+                               (sonarr_traefik_subdomain is not none) and
+                               (sonarr_traefik_subdomain | trim | length > 0) and
+                               (sonarr_traefik_domain is defined) and
+                               (sonarr_traefik_domain is not none) and
+                               (sonarr_traefik_domain | trim | length > 0) and
+                               (sonarr_traefik_port is defined) and
+                               (sonarr_traefik_port is not none) and
+                               (sonarr_traefik_port | trim | length > 0) and
+                               (sonarr_traefik_themepark_theme is defined) and
+                               (sonarr_traefik_themepark_theme is not none) and
+                               (sonarr_traefik_themepark_theme | trim | length > 0) }}'
+
+sonarr_traefik_network_is_enabled: '{{ (sonarr_traefik_network is defined) and
+                                       (sonarr_traefik_network is not none) and
+                                       (sonarr_traefik_network | trim | length > 0) and
+                                       (sonarr_traefik_network_driver is defined) and
+                                       (sonarr_traefik_network_driver is not none) and
+                                       (sonarr_traefik_network_driver | trim | length > 0) and
+                                       (sonarr_traefik_network_subnet is defined) and
+                                       (sonarr_traefik_network_subnet is not none) and
+                                       (sonarr_traefik_network_subnet | trim | length > 0) }}'
+
+sonarr_traefik_labels_default:
+  traefik.enable: 'true'
+  traefik.docker.network: '{{ sonarr_traefik_network }}'
+
+sonarr_traefik_labels_router:
+  traefik.http.routers.sonarr-rtr.entrypoints: 'http'
+  traefik.http.routers.sonarr-rtr.rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`)'
+  traefik.http.routers.sonarr-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.sonarr-rtr.priority: '20'
+  traefik.http.routers.sonarr-rtr.service: 'sonarr-rtr-svc'
+  traefik.http.services.sonarr-rtr-svc.loadbalancer.server.port: '{{ sonarr_traefik_port }}'
+  traefik.http.routers.sonarr-api-rtr.entrypoints: 'http'
+  traefik.http.routers.sonarr-api-rtr.middlewares: 'globalHeaders@file,robotHeaders@file'
+  traefik.http.routers.sonarr-api-rtr.priority: '30'
+  traefik.http.routers.sonarr-api-rtr.rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`) && (PathPrefix(`/api/websocket/`))'
+  traefik.http.routers.sonarr-api-rtr.service: 'sonarr-rtr-svc'
+
+sonarr_traefik_labels_router_secure:
+  traefik.http.routers.sonarr-rtr-secure.entrypoints: 'https'
+  traefik.http.routers.sonarr-rtr-secure.rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`)'
+  traefik.http.routers.sonarr-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.sonarr-rtr-secure.priority: '20'
+  traefik.http.routers.sonarr-rtr-secure.service: 'sonarr-rtr-secure-svc'
+  traefik.http.routers.sonarr-rtr-secure.tls.certresolver: 'dns-cloudflare'
+  traefik.http.routers.sonarr-rtr-secure.tls.options: 'tls-opts@file'
+  traefik.http.services.sonarr-rtr-secure-svc.loadbalancer.server.port: '{{ sonarr_traefik_port }}'
+  traefik.http.routers.sonarr-api-rtr-secure.entrypoints: 'https'
+  traefik.http.routers.sonarr-api-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file'
+  traefik.http.routers.sonarr-api-rtr-secure.priority: '30'
+  traefik.http.routers.sonarr-api-rtr-secure.rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`) && (PathPrefix(`/api/websocket/`))'
+  traefik.http.routers.sonarr-api-rtr-secure.service: 'sonarr-rtr-secure-svc'
+  traefik.http.routers.sonarr-api-rtr-secure.tls.certresolver: 'dns-cloudflare'
+  traefik.http.routers.sonarr-api-rtr-secure.tls.options: 'tls-opts@file'
+
+sonarr_traefik_labels_themepark:
+  traefik.http.middlewares.themepark-portainer.plugin.themepark.app: '{{ sonarr_basics_name }}'
+  traefik.http.middlewares.themepark-portainer.plugin.themepark.theme: '{{ sonarr_traefik_themepark_theme }}'
+
+sonarr_traefik_labels: '{{ sonarr_traefik_labels_default
+                           | combine(sonarr_traefik_labels_router)
+                           | combine(sonarr_traefik_labels_router_secure)
+                           | combine(sonarr_traefik_labels_themepark) }}'
+
+################################
+# CLOUDFLARE
+################################
+
+sonarr_cloudflare_record: '{{ sonarr_traefik_subdomain }}'
+sonarr_cloudflare_zone: '{{ sonarr_traefik_domain }}'
+
+sonarr_cloudflare_is_enabled: '{{ (sonarr_cloudflare_record_type is defined) and
+                                  (sonarr_cloudflare_record_type is not none) and
+                                  (sonarr_cloudflare_record_type | trim | length > 0) and
+                                  (sonarr_cloudflare_proxy is defined) and
+                                  (sonarr_cloudflare_proxy is not none) and
+                                  (sonarr_cloudflare_proxy | trim | length > 0) and
+                                  (sonarr_cloudflare_api_token is defined) and
+                                  (sonarr_cloudflare_api_token is not none) and
+                                  (sonarr_cloudflare_api_token | trim | length > 0) }}'

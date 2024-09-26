@@ -1,0 +1,292 @@
+---
+
+################################
+# DEPENDENCIES
+################################
+
+- name: Install prerequisite apt packages
+  ansible.builtin.apt:
+    pkg:
+      - python3-requests
+      - python3-psycopg2
+      - python3-lxml
+    update_cache: true
+
+- name: Install collection requirements
+  community.general.ansible_galaxy_install:
+    type: collection
+    requirements_file: '{{ role_path }}/requirements.yml'
+
+################################
+# DOCKER
+################################
+
+- name: Apt install docker if required
+  when: ansible_os_family == 'Debian'
+  block:
+    - name: Gather apt facts
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Include docker install tasks
+      when: '"docker-ce" not in ansible_facts.packages'
+      ansible.builtin.include_tasks: 'sub_tasks/docker.yml'
+
+################################
+# CLEAN UP
+################################
+
+- name: Register sonarr container
+  community.docker.docker_container_info:
+    name: '{{ sonarr_basics_name }}'
+  register: sonarr_existing_container_result
+
+- name: Remove existing sonarr container
+  when: sonarr_existing_container_result.exists
+  community.docker.docker_container:
+    container_default_behavior: compatibility
+    name: '{{ sonarr_basics_name }}'
+    state: absent
+    stop_timeout: 10
+  register: remove_sonarr_docker
+  retries: 5
+  delay: 10
+  until: remove_sonarr_docker is succeeded
+
+################################
+# BACKEND NETWORK
+################################
+
+- name: Conduct backend network tasks
+  when: sonarr_network_backend_is_enabled
+  block:
+    - name: Register sonarr backend network
+      community.docker.docker_network_info:
+        name: '{{ sonarr_network_backend }}'
+      register: sonarr_net_backend_result
+
+    - name: Sonarr network backend builtin fail
+      ansible.builtin.fail:
+        msg: Sonarr backend network does not exist nor is it enabled. Ensure the Sonarr backend network variables contain valid entries.
+      when:
+        - not sonarr_net_backend_result.exists
+        - not sonarr_network_backend_is_enabled
+
+    - name: Create sonarr backend network
+      when:
+        - not sonarr_net_backend_result.exists
+        - sonarr_network_backend_is_enabled
+      community.docker.docker_network:
+        name: '{{ sonarr_network_backend }}'
+        driver: '{{ sonarr_network_backend_driver }}'
+        ipam_config:
+          - subnet: '{{ sonarr_network_backend_subnet }}'
+
+################################
+# APPDATA
+################################
+
+- name: Create sonarr appdata directory
+  ansible.builtin.file:
+    path: '{{ sonarr_paths_location }}'
+    state: directory
+    owner: '{{ sonarr_env_puid }}'
+    group: '{{ sonarr_env_pgid }}'
+    mode: '0755'
+
+################################
+# CONFIG
+################################
+
+- name: Check if sonarr config.xml exists
+  ansible.builtin.stat:
+    path: '{{ sonarr_paths_location }}/config.xml'
+  register: sonarr_config_xml
+
+- name: Create sonarr config.xml file
+  when: not sonarr_config_xml.stat.exists
+  block:
+    - name: Import config file
+      ansible.builtin.template:
+        src: '{{ role_path }}/templates/config.xml.j2'
+        dest: '{{ sonarr_paths_location }}/config.xml'
+        force: true
+        owner: '{{ sonarr_env_puid }}'
+        group: '{{ sonarr_env_pgid }}'
+        mode: '0664'
+
+    - name: Wait for 'config.xml' to be created
+      ansible.builtin.wait_for:
+        path: '{{ sonarr_paths_location }}/config.xml'
+        state: present
+
+    - name: Sonarr config.xml | Lookup Apikey value
+      when: sonarr_api_key_is_enabled
+      community.general.xml:
+        path: '{{ sonarr_paths_location }}/config.xml'
+        xpath: "/Config/ApiKey"
+        content: "text"
+      register: xml_sonarr_api
+
+    - name: Sonarr config.xml | insert existing api key
+      when:
+        - sonarr_api_key_is_enabled
+        - ((xml_sonarr_api.matches[0].ApiKey is defined) and (xml_sonarr_api.matches[0].ApiKey != sonarr_api_key))
+      community.general.xml:
+        path: '{{ sonarr_paths_location }}/config.xml'
+        xpath: '/Config/ApiKey'
+        value: '{{ sonarr_api_key }}'
+
+    - name: Sonarr config.xml | Lookup AuthenticationMethod value
+      when: sonarr_authelia_is_enabled
+      community.general.xml:
+        path: '{{ sonarr_paths_location }}/config.xml'
+        xpath: "/Config/AuthenticationMethod"
+        content: "text"
+      register: xml_sonarr_external
+
+    - name: Register authelia container
+      when: sonarr_authelia_is_enabled
+      community.docker.docker_container_info:
+        name: '{{ sonarr_authelia_name }}'
+      register: sonarr_authelia_container_result
+
+    - name: Sonarr config.xml | change auth method to external  ## prevents double login when using authelia
+      when:
+        - sonarr_authelia_is_enabled
+        - sonarr_authelia_container_result.exists
+        - ((xml_sonarr_external.matches[0].AuthenticationMethod is defined) and (xml_sonarr_external.matches[0].AuthenticationMethod != 'External'))
+      community.general.xml:
+        path: '{{ sonarr_paths_location }}/config.xml'
+        xpath: '/Config/AuthenticationMethod'
+        value: 'External'
+
+################################
+# POSTGRES
+################################
+
+- name: Include postgres container tasks
+  when: sonarr_postgres_is_enabled
+  ansible.builtin.include_tasks: 'postgres/postgres_container.yml'
+
+- name: Include postgres database tasks
+  when: sonarr_postgres_is_enabled
+  ansible.builtin.include_tasks: 'postgres/postgres_database.yml'
+
+- name: Include postgres sonarr config.xml tasks
+  when: sonarr_postgres_is_enabled
+  ansible.builtin.include_tasks: 'postgres/postgres_config_xml.yml'
+
+################################
+# TRAEFIK
+################################
+
+- name: Conduct traefik tasks
+  when: sonarr_traefik_is_enabled
+  block:
+    - name: Register traefik network
+      community.docker.docker_network_info:
+        name: '{{ sonarr_traefik_network }}'
+      register: sonarr_traefik_network_result
+
+    - name: Traefik builtin fail
+      when:
+        - not sonarr_traefik_network_is_enabled
+        - not sonarr_traefik_network_result.exists
+      ansible.builtin.fail:
+        msg: Traefik network does not exist nor is it enabled. Ensure the Traefik network variables contain valid entries.
+
+    - name: Create traefik network
+      when: not sonarr_traefik_network_result.exists
+      community.docker.docker_network:
+        name: '{{ sonarr_traefik_network }}'
+        driver: '{{ sonarr_traefik_network_driver }}'
+        ipam_config:
+          - subnet: '{{ sonarr_traefik_network_subnet }}'
+
+################################
+# CLOUDFLARE
+################################
+
+- name: Include cloudflare tasks
+  when: sonarr_cloudflare_is_enabled
+  ansible.builtin.include_tasks: 'sub_tasks/cloudflare.yml'
+
+################################
+# NFS
+################################
+
+- name: Include nfs tasks
+  ansible.builtin.include_tasks: 'sub_tasks/nfs.yml'
+
+################################
+# RCLONE
+################################
+
+- name: Include rclone tasks
+  when: sonarr_rclone_qbittorrent_is_enabled
+  ansible.builtin.include_tasks: 'sub_tasks/rclone.yml'
+
+################################
+# METRICS
+################################
+
+- name: Include prometheus container tasks
+  when: sonarr_prometheus_is_enabled
+  ansible.builtin.include_tasks: 'prometheus/prometheus_container.yml'
+
+- name: Include prometheus exporter tasks
+  when:
+    - sonarr_prometheus_is_enabled
+    - sonarr_prometheus_exporter_is_enabled
+  ansible.builtin.include_tasks: 'prometheus/prometheus_exporter.yml'
+
+- name: Include prometheus cloudflare tasks
+  when: sonarr_prometheus_is_enabled
+  ansible.builtin.include_tasks: 'prometheus/prometheus_cloudflare.yml'
+
+################################
+# CONTAINER
+################################
+
+- name: Create sonarr container
+  when: not sonarr_traefik_is_enabled
+  community.docker.docker_container:
+    name: '{{ sonarr_basics_name }}'
+    image: '{{ sonarr_basics_image_repo }}:{{ sonarr_basics_image_tag }}'
+    networks: '{{ sonarr_docker_networks }}'
+    env:
+      PUID: '{{ sonarr_env_puid }}'
+      PGID: '{{ sonarr_env_pgid }}'
+      TZ: '{{ sonarr_env_timezone }}'
+    ports:
+      - '{{ sonarr_ports_host }}:{{ sonarr_ports_cont }}'
+    volumes: '{{ sonarr_docker_volumes }}'
+#    healthcheck:
+    restart_policy: '{{ sonarr_basics_restart_policy }}'
+
+- name: Create sonarr traefik container
+  when: sonarr_traefik_is_enabled
+  community.docker.docker_container:
+    name: '{{ sonarr_basics_name }}'
+    image: '{{ sonarr_basics_image_repo }}:{{ sonarr_basics_image_tag }}'
+    networks: '{{ sonarr_docker_networks }}'
+    env:
+      PUID: '{{ sonarr_env_puid }}'
+      PGID: '{{ sonarr_env_pgid }}'
+      TZ: '{{ sonarr_env_timezone }}'
+    labels: '{{ sonarr_traefik_labels }}'
+    ports:
+      - '{{ sonarr_ports_host }}:{{ sonarr_ports_cont }}'
+    volumes: '{{ sonarr_docker_volumes }}'
+#    healthcheck:
+    restart_policy: '{{ sonarr_basics_restart_policy }}'
+
+################################
+# RECYCLARR
+################################
+
+- name: Include recyclarr tasks
+  when: sonarr_recyclarr_is_enabled
+  ansible.builtin.include_tasks: 'recyclarr.yml'
+

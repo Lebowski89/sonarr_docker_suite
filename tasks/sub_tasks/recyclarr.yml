@@ -1,0 +1,189 @@
+---
+
+- name: Create recyclarr appdata directory
+  ansible.builtin.file:
+    path: '{{ sonarr_recyclarr_paths_location }}'
+    state: directory
+    owner: '{{ sonarr_recyclarr_env_puid }}'
+    group: '{{ sonarr_recyclarr_env_pgid }}'
+    mode: '0755'
+
+- name: Insert sonarr's recyclarr secrets settings
+  ansible.builtin.blockinfile:
+    path: '{{ sonarr_recyclarr_paths_location }}/secrets.yml'
+    marker: "## {mark} ANSIBLE SONARR MANAGED BLOCK ##"
+    owner: '{{ sonarr_recyclarr_env_puid }}'
+    group: '{{ sonarr_recyclarr_env_pgid }}'
+    mode: '0664'
+    create: true
+    block: |
+      sonarr_base_url: http://{{ sonarr_basics_name }}:{{ sonarr_ports_cont }}
+      sonarr_api_key: {{ sonarr_api_key }}
+  notify:
+    - restart recyclarr
+
+- name: Insert sonarr's recyclarr config settings
+  ansible.builtin.blockinfile:  ## these are settings I use. Yours may differ. See: https://recyclarr.dev/wiki/
+    path: '{{ sonarr_recyclarr_paths_location }}/recyclarr.yml'
+    marker: "## {mark} ANSIBLE SONARR MANAGED BLOCK ##"
+    owner: '{{ sonarr_recyclarr_env_puid }}'
+    group: '{{ sonarr_recyclarr_env_pgid }}'
+    mode: '0664'
+    create: true
+    block: |
+      sonarr:
+        sonarr:
+          media_naming:
+            series: plex
+            season: default
+            episodes:
+              rename: true
+              standard: default
+              daily: default
+              anime: default
+          quality_definition:
+            type: series
+          quality_profiles:
+            - name: "WEB-DL (1080p)"
+              reset_unmatched_scores:
+                enabled: true
+              upgrade:
+                allowed: true
+                until_quality: "WEB 1080p"
+                until_score: 10000
+              min_format_score: 0
+              quality_sort: top
+              qualities:
+                - name: "WEB 1080p"
+                  qualities:
+                    - WEBDL-1080p
+                    - WEBRip-1080p
+                - name: HDTV-1080p
+                - name: "WEB 720p"
+                  qualities:
+                    - WEBDL-720p
+                    - WEBRip-720p
+                - name: HDTV-720p
+            - name: "UK"
+              reset_unmatched_scores:
+                enabled: true
+              upgrade:
+                allowed: true
+                until_quality: "WEB 1080p"
+                until_score: 10000
+              min_format_score: 0
+              quality_sort: top
+              qualities:
+                - name: "WEB 1080p"
+                  qualities:
+                    - WEBDL-1080p
+                    - WEBRip-1080p
+                - name: HDTV-1080p
+                - name: "WEB 720p"
+                  qualities:
+                    - WEBDL-720p
+                    - WEBRip-720p
+                - name: HDTV-720p
+                - name: "WEB 480p"
+                  qualities:
+                    - WEBDL-480p
+                    - WEBRip-480p
+                - name: SDTV
+          delete_old_custom_formats: true
+          replace_existing_custom_formats: true
+          custom_formats:
+            - trash_ids:
+                  # Unwanted
+                - 85c61753df5da1fb2aab6f2a47426b09 # BR-DISK
+                - 9c11cd3f07101cdba90a2d81cf0e56b4 # LQ
+                - e2315f990da2e2cbfc9fa5b7a6fcfe48 # LQ (Release Title)
+                - 23297a736ca77c0fc8e70f8edd7ee56c # Upscaled
+                - 47435ece6b99a0b477caf360e79ba0bb # x265 (HD)
+                  # Optional
+                - 32b367365729d530ca1c124a0b180c64 # Bad Dual Groups
+                - 82d40da2bc6923f41e14394075dd4b03 # No-RlsGroup
+                - e1a997ddb54e3ecbfe06341ad323c458 # Obfuscated
+                - 06d66ab109d4d2eddb2794d21526d140 # Retags
+                - 1b3994c551cbb92a2c781af061f4ab44 # Scene
+                  # Misc
+                - d7c747094a7c65f4c2de083c24899e8b # FreeLeech
+                - 4aee45b0868229c4fbd8bad3e315f1d0 # MPEG2
+                - 7ba05c6e0e14e793538174c679126996 # Multi
+                - eb3d5cc0a2be0db205fb823640db6a3c # Repack v2
+                - 44e7c4de10ae50265753082e5dc76047 # Repack v3
+                - ec8fa7296b64e8cd390a1600981f3923 # Repack/Proper
+                - cddfb4e32db826151d97352b8e37c648 # x264
+                - c9eafd50846d299b862ca9bb6ea91950 # x265
+                - 041d90b435ebd773271cea047a457a6a # x266
+                  # Series Versions
+                - 3a4127d8aa781b44120d907f2cd62627 # Hybrid
+                - b735f09d3c025cbb7d75a5d38325b73b # Remaster
+                  # Dutch Streaming Services
+                - b2b980877494b560443631eb1f473867 # NLZ
+                - 5d2317d99af813b6529c7ebf01c83533 # VDL
+                  # French Streaming Services
+                - f27d46a831e6b16fa3fee2c4e5d10984 # CANAL+
+                - b0d6195c23ae254932da00512db7e8a8 # RTBF
+                - 0455d6519a550dbf648c97b56e7231d2 # SALTO
+                  # General Streaming Services
+                - d660701077794679fd59e8bdf4ce3a29 # AMZN
+                - f67c9ca88f463a48346062e8ad07713f # ATVP
+                - 77a7b25585c18af08f60b1547bb9b4fb # CC
+                - 36b72f59f4ea20aad9316f475f2d9fbb # DCU
+                - 89358767a60cc28783cdc3d0be9388a4 # DSNP
+                - 7a235133c87f7da4c8cccceca7e3c7a6 # HBO
+                - a880d6abc21e7c16884f3ae393f84179 # HMAX
+                - f6cce30f1733d5c8194222a7507909bb # HULU
+                - 81d1fbf600e2540cee87f3a23f9d3c1c # MAX
+                - d34870697c9db575f17700212167be23 # NF
+                - 1656adc6d7bb2c8cca6acfb6592db421 # PCOK
+                - c67a75ae4a1715f2bb4d492755ba4195 # PMTP
+                - ae58039e1319178e6be73caab5c42166 # SHO
+                - 1efe8da11bfd74fbbcd4d8117ddb9213 # STAN
+                - 0ac24a2a68a9700bcb7eeca8e5cd644c # iT
+                  # Misc Streaming Services
+                - 4e9a630db98d5391aec1368a0256e2fe # CRAV
+                - dc5f2bb0e0262155b5fedd0f6c5d2b55 # DSCP
+                - fb1a91cdc0f26f7ca0696e0e95274645 # OViD
+                - 3ac5d84fce98bab1b531393e9c82f467 # QIBI
+                - c30d2958827d1867c73318a5a2957eb1 # RED
+                - fe4062eac43d4ea75955f8ae48adcf1e # STRP
+                  # Optional Streaming Services
+                - 43b3cf48cb385cd3eac608ee6bca7f09 # UHD Streaming Boost
+                - d2d299244a92b8a52d4921ce3897a256 # UHD Streaming Cut
+                  # UK Streaming Services
+                - bbcaf03147de0f73be2be4a9078dfa03 # 4OD
+                - fcc09418f67ccaddcf3b641a22c5cfd7 # ALL4
+                - dc503e2425126fa1d0a9ad6168c83b3f # IP
+                - fa5a16b951004c23e980d2913694a137 # ITVX
+                - b66a699fba6f9df91becab798d7502e5 # NOW
+                  # HQ Source Groups
+                - e6258996055b9fbab7e9cb2f75819294 # WEB Tier 01
+                - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
+                - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
+                - d0c516558625b04b363fa6c5c2c7cfd4 # WEB Scene
+              quality_profiles:
+                - name: "WEB-DL (1080p)"
+                - name: "UK"
+  notify:
+    - restart recyclarr
+
+- name: Register recyclarr container
+  community.docker.docker_container_info:
+    name: '{{ sonarr_recyclarr_basics_name }}'
+  register: sonarr_recyclarr_container_result
+
+- name: Create recyclarr container
+  when: not sonarr_recyclarr_container_result.exists
+  community.docker.docker_container:
+    name: '{{ sonarr_recyclarr_basics_name }}'
+    image: '{{ sonarr_recyclarr_basics_image_repo }}:{{ sonarr_recyclarr_basics_image_tag }}'
+    networks: '{{ sonarr_network_default }}'
+    env:
+      PUID: '{{ sonarr_recyclarr_env_puid }}'
+      PGID: '{{ sonarr_recyclarr_env_pgid }}'
+      TZ: '{{ sonarr_recyclarr_env_timezone }}'
+      CRON_SCHEDULE: '@daily'
+      RECYCLARR_CREATE_CONFIG: 'false'
+    volumes: '{{ sonarr_recyclarr_bind_mount }}'
+    restart_policy: '{{ sonarr_recyclarr_basics_restart_policy }}'

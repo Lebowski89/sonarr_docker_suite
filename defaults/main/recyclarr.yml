@@ -1,0 +1,32 @@
+---
+
+################################
+# BASICS
+################################
+
+sonarr_recyclarr_basics_name: 'recyclarr'
+sonarr_recyclarr_basics_image_repo: 'ghcr.io/recyclarr/recyclarr'
+sonarr_recyclarr_basics_image_tag: 'latest'
+sonarr_recyclarr_basics_restart_policy: 'unless-stopped'
+
+################################
+# ENV
+################################
+
+sonarr_recyclarr_env_timezone: 'Australia/Melbourne'
+sonarr_recyclarr_env_puid: 'ansible'
+sonarr_recyclarr_env_pgid: 'ansible'
+
+################################
+# PATHS
+################################
+
+sonarr_recyclarr_paths_folder: '{{ sonarr_recyclarr_name }}'
+sonarr_recyclarr_paths_location: '/opt/{{ sonarr_recyclarr_folder }}'
+
+################################
+# BINDS
+################################
+
+sonarr_recyclarr_bind_mount:
+  - '{{ sonarr_recyclarr_paths_location }}:/config'

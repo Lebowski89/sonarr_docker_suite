@@ -1,0 +1,78 @@
+---
+
+################################
+# BASICS
+################################
+
+sonarr_postgres_basics_host: []  # machine address for ansible postgres module to ping database
+sonarr_postgres_basics_name: 'postgres'
+sonarr_postgres_basics_image_repo: 'postgres'
+sonarr_postgres_basics_image_tag: '14'
+sonarr_postgres_basics_restart_policy: 'unless-stopped'
+
+################################
+# NETWORK
+################################
+
+sonarr_postgres_network: 'postgres'
+sonarr_postgres_network_driver: []  ## only required if network doesn't exist
+sonarr_postgres_network_subnet: []  ## only required if network doesn't exist
+
+################################
+# ENV
+################################
+
+sonarr_postgres_env_timezone: []
+sonarr_postgres_env_puid: []
+sonarr_postgres_env_pgid: []
+
+################################
+# PORTS
+################################
+
+sonarr_postgres_ports_host: '5432'
+sonarr_postgres_ports_cont: '5432'
+
+################################
+# PATHS
+################################
+
+sonarr_postgres_paths_folder: '{{ sonarr_postgres_basics_name }}'  # name of postgres folder
+sonarr_postgres_paths_location: '/opt/{{ sonarr_postgres_paths_folder }}' # path of postgres folder
+sonarr_postgres_paths_keys_folder: 'keys'
+sonarr_postgres_paths_keys_location: '{{ sonarr_postgres_paths_location }}/{{ sonarr_postgres_paths_keys_folder }}'
+
+################################
+# BINDS
+################################
+
+sonarr_postgres_binds_config_mapping:
+  - '{{ sonarr_postgres_paths_location }}:/var/lib/postgresql/data'
+
+sonarr_postgres_binds_keys_mapping:
+  - '{{ sonarr_postgres_paths_keys_location }}:/keys'
+
+################################
+# AUTH
+################################
+
+sonarr_postgres_auth_user: []
+sonarr_postgres_auth_password: []
+sonarr_postgres_auth_password_file: 'postgres_key.txt'
+
+################################
+# DATABASE
+################################
+
+sonarr_postgres_database_main: 'sonarr-main'
+sonarr_postgres_database_log: 'sonarr-log' 
+
+################################
+# CLEAN
+################################
+
+  ## warning: the below toggles will delete any existing sqlite database files in the sonarr appdir.
+  ## toggle false if you're planning to migrate db data. See: https://wiki.servarr.com/sonarr/postgres-setup
+
+sonarr_postgres_clean_files: true  # true will delete any existing sqlite database files in the sonarr appdir.
+sonarr_postgres_clean_folders: true  # true will delete sqlite backups folder in the sonarr appdir.
