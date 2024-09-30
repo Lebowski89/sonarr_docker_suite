@@ -48,13 +48,13 @@ sonarr_prometheus_paths_data_location: '{{ sonarr_prometheus_paths_location }}/d
 sonarr_prometheus_binds_config_mapping:
   - '{{ sonarr_prometheus_paths_location }}/prometheus.yml:/etc/prometheus/prometheus.yml'
 
-sonarr_prometheus_binds_data_mapping: 
+sonarr_prometheus_binds_data_mapping:
   - '{{ sonarr_prometheus_paths_data_location }}:/data'
 
 ################################
 # TRAEFIK
 ################################
-  
+
 sonarr_prometheus_traefik_subdomain: '{{ sonarr_prometheus_basics_name }}'
 sonarr_prometheus_traefik_domain: []
 sonarr_prometheus_traefik_network: 'traefik_proxy'
@@ -83,6 +83,5 @@ sonarr_prometheus_exporter_name: '{{ sonarr_basics_name }}_exporter'
 sonarr_prometheus_exporter_image_repo: 'ghcr.io/onedr0p/exportarr'
 sonarr_prometheus_exporter_image_tag: 'v2.0.1'
 sonarr_prometheus_exporter_restart_policy: 'unless-stopped'
-sonarr_prometheus_exporter_host_port: '9707' 
+sonarr_prometheus_exporter_host_port: '9707'
 sonarr_prometheus_exporter_cont_port: '9707'
-

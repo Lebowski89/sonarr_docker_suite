@@ -289,4 +289,3 @@
 - name: Include recyclarr tasks
   when: sonarr_recyclarr_is_enabled
   ansible.builtin.include_tasks: 'sub_tasks/recyclarr.yml'
-

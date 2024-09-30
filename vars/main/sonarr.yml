@@ -29,7 +29,7 @@ sonarr_network_postgres_bind:
 sonarr_network_traefik_bind:
   - name: '{{ sonarr_traefik_network }}'
 sonarr_network_prometheus_bind:
-  - name: '{{sonarr_prometheus_network }}'
+  - name: '{{ sonarr_prometheus_network }}'
 
 sonarr_docker_networks: '{{ sonarr_network_default_bind
                             + (sonarr_network_postgres_bind

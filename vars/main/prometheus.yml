@@ -79,7 +79,7 @@ sonarr_prometheus_network_default_bind:
 sonarr_prometheus_network_traefik_bind:
   - name: '{{ sonarr_prometheus_traefik_network }}'
 sonarr_prometheus_network_bind:
-  - name: '{{sonarr_prometheus_network }}'
+  - name: '{{ sonarr_prometheus_network }}'
 
 sonarr_prometheus_docker_networks: '{{ sonarr_prometheus_network_default_bind
                                        + (sonarr_prometheus_network_traefik_bind
@@ -182,7 +182,7 @@ sonarr_prometheus_exporter_is_enabled: '{{ (sonarr_prometheus_exporter_name is d
 sonarr_prometheus_exporter_network_default_bind:
   - name: '{{ sonarr_network_backend }}'
 sonarr_prometheus_exporter_network_bind:
-  - name: '{{sonarr_prometheus_network }}'
+  - name: '{{ sonarr_prometheus_network }}'
 
 sonarr_prometheus_exporter_networks: '{{ sonarr_prometheus_exporter_network_default_bind
                                          + (sonarr_prometheus_exporter_network_bind

@@ -65,7 +65,7 @@ sonarr_postgres_auth_password_file: 'postgres_key.txt'
 ################################
 
 sonarr_postgres_database_main: 'sonarr-main'
-sonarr_postgres_database_log: 'sonarr-log' 
+sonarr_postgres_database_log: 'sonarr-log'
 
 ################################
 # CLEAN
@@ -74,5 +74,5 @@ sonarr_postgres_database_log: 'sonarr-log'
   ## warning: the below toggles will delete any existing sqlite database files in the sonarr appdir.
   ## toggle false if you're planning to migrate db data. See: https://wiki.servarr.com/sonarr/postgres-setup
 
-sonarr_postgres_clean_files: true  # true will delete any existing sqlite database files in the sonarr appdir.
-sonarr_postgres_clean_folders: true  # true will delete sqlite backups folder in the sonarr appdir.
+sonarr_postgres_clean_files: false  # true will delete any existing sqlite database files in the sonarr appdir.
+sonarr_postgres_clean_folders: false  # true will delete sqlite backups folder in the sonarr appdir.
