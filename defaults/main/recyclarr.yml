@@ -21,8 +21,8 @@ sonarr_recyclarr_env_pgid: []
 # PATHS
 ################################
 
-sonarr_recyclarr_paths_folder: '{{ sonarr_recyclarr_name }}'
-sonarr_recyclarr_paths_location: '/opt/{{ sonarr_recyclarr_folder }}'
+sonarr_recyclarr_paths_folder: '{{ sonarr_recyclarr_basics_name }}'
+sonarr_recyclarr_paths_location: '/opt/{{ sonarr_recyclarr_paths_folder }}'
 
 ################################
 # BINDS
