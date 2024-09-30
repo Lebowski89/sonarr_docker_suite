@@ -10,3 +10,5 @@ Sonarr Suite
       - Includes the option of setting up the Rclone Docker plugin and the creation of Rclone Docker volumes (to attach to the Sonarr container).
       - Includes the option of joining Sonarr to an existing Traefik docker network (or creating one if none exists).
       - Includes the option of editing Sonarr's config.xml to include an existing Sonarr API - maintaining connections to other applications that rely on it.
+
+(Proper documentation is coming...)
