@@ -4,7 +4,7 @@
 # API
 ################################
 
-sonarr_api_key: []
+sonarr_api_key: ''
 
 ################################
 # BASICS
@@ -20,16 +20,16 @@ sonarr_basics_restart_policy: 'unless-stopped'
 ################################
 
 sonarr_network_backend: 'proxy'  ## allows backend docker communication between sonarr and companion apps, such as recyclarr
-sonarr_network_backend_driver: []  ## only required if network doesn't exist
-sonarr_network_backend_subnet: []  ## only required if network doesn't exist
+sonarr_network_backend_driver: ''  ## only required if network doesn't exist
+sonarr_network_backend_subnet: ''  ## only required if network doesn't exist
 
 ################################
 # ENV
 ################################
 
-sonarr_env_timezone: []
-sonarr_env_puid: []
-sonarr_env_pgid: []
+sonarr_env_timezone: ''
+sonarr_env_puid: ''
+sonarr_env_pgid: ''
 
 ################################
 # PORTS
@@ -64,14 +64,14 @@ sonarr_authelia_name: 'authelia'
 ################################
 
 sonarr_traefik_subdomain: '{{ sonarr_basics_name }}'
-sonarr_traefik_domain: []
+sonarr_traefik_domain: ''
 sonarr_traefik_port: '8989'
 sonarr_traefik_themepark_theme: 'hotline'  ## See https://github.com/themepark-dev/theme.park
 
   ## traefik docker network
 sonarr_traefik_network: 'traefik_proxy'
-sonarr_traefik_network_driver: []  ## only required if network doesn't exist
-sonarr_traefik_network_subnet: []  ## only required if network doesn't exist
+sonarr_traefik_network_driver: ''  ## only required if network doesn't exist
+sonarr_traefik_network_subnet: ''  ## only required if network doesn't exist
 
 ################################
 # CLOUDFLARE
@@ -79,4 +79,4 @@ sonarr_traefik_network_subnet: []  ## only required if network doesn't exist
 
 sonarr_cloudflare_record_type: 'A'  ## A (IPV4), AAAA (IPV6), CNAME, etc
 sonarr_cloudflare_proxy: 'true'  ## true for cloudflare DNS SSL
-sonarr_cloudflare_api_token: []
+sonarr_cloudflare_api_token: ''

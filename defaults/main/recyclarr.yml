@@ -13,9 +13,9 @@ sonarr_recyclarr_basics_restart_policy: 'unless-stopped'
 # ENV
 ################################
 
-sonarr_recyclarr_env_timezone: []
-sonarr_recyclarr_env_puid: []
-sonarr_recyclarr_env_pgid: []
+sonarr_recyclarr_env_timezone: ''
+sonarr_recyclarr_env_puid: ''
+sonarr_recyclarr_env_pgid: ''
 
 ################################
 # PATHS

@@ -4,7 +4,7 @@
 # BASICS
 ################################
 
-sonarr_postgres_basics_host: []  # machine address for ansible postgres module to ping database
+sonarr_postgres_basics_host: ''  # machine address for ansible postgres module to ping database
 sonarr_postgres_basics_name: 'postgres'
 sonarr_postgres_basics_image_repo: 'postgres'
 sonarr_postgres_basics_image_tag: '14'
@@ -15,16 +15,16 @@ sonarr_postgres_basics_restart_policy: 'unless-stopped'
 ################################
 
 sonarr_postgres_network: 'postgres'
-sonarr_postgres_network_driver: []  ## only required if network doesn't exist
-sonarr_postgres_network_subnet: []  ## only required if network doesn't exist
+sonarr_postgres_network_driver: ''  ## only required if network doesn't exist
+sonarr_postgres_network_subnet: ''  ## only required if network doesn't exist
 
 ################################
 # ENV
 ################################
 
-sonarr_postgres_env_timezone: []
-sonarr_postgres_env_puid: []
-sonarr_postgres_env_pgid: []
+sonarr_postgres_env_timezone: ''
+sonarr_postgres_env_puid: ''
+sonarr_postgres_env_pgid: ''
 
 ################################
 # PORTS
@@ -56,8 +56,8 @@ sonarr_postgres_binds_keys_mapping:
 # AUTH
 ################################
 
-sonarr_postgres_auth_user: []
-sonarr_postgres_auth_password: []
+sonarr_postgres_auth_user: ''
+sonarr_postgres_auth_password: ''
 sonarr_postgres_auth_password_file: 'postgres_key.txt'
 
 ################################
