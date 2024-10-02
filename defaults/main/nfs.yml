@@ -4,7 +4,6 @@
 # ENV
 ################################
 
-sonarr_nfs_env_timezone: ''
 sonarr_nfs_env_puid: ''
 sonarr_nfs_env_pgid: ''
 

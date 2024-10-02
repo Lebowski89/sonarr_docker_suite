@@ -55,8 +55,3 @@
           type: nfs
           o: 'addr={{ sonarr_nfs_media_address }},{{ sonarr_nfs_media_permissions }},nfsvers={{ sonarr_nfs_media_version }}'
           device: '{{ sonarr_nfs_media_device }}'
-
-    - name: Register sonarr nfs media volume
-      community.docker.docker_volume_info:
-        name: '{{ sonarr_nfs_media_name }}'
-      register: sonarr_nfs_media_volume_result
