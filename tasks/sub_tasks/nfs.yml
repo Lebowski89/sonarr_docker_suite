@@ -22,7 +22,7 @@
       ansible.builtin.lineinfile:
         dest: '{{ sonarr_autofs_auto_mast_file }}'
         line: '{{ sonarr_autofs_nfs_local_path }} {{ sonarr_autofs_nfsdb_file }} --timeout=0 --browse'
-        state: 'present'
+        state: present
         create: true
         owner: '{{ sonarr_nfs_env_puid }}'
         group: '{{ sonarr_nfs_env_pgid }}'
@@ -34,7 +34,7 @@
       ansible.builtin.lineinfile:
         dest: '{{ sonarr_autofs_nfsdb_file }}'
         line: '{{ sonarr_autofs_media_mount_local_dir_name }} {{ sonarr_autofs_media_mount_opt }} {{ sonarr_autofs_media_mount_host_address }}:{{ sonarr_autofs_media_mount_remote_path }}'
-        state: 'present'
+        state: present
         create: true
         owner: '{{ sonarr_nfs_env_puid }}'
         group: '{{ sonarr_nfs_env_pgid }}'
