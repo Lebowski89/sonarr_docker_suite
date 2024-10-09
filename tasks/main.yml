@@ -246,6 +246,22 @@
   ansible.builtin.include_tasks: 'prometheus/prometheus_cloudflare.yml'
 
 ################################
+# THEMEPARK
+################################
+
+- name: Run themepark tasks
+  when: sonarr_themepark_local_is_enabled
+  block:
+    - name: Register themepark container
+      community.docker.docker_container_info:
+        name: '{{ sonarr_themepark_basics_name }}'
+      register: sonarr_themepark_container_result
+
+    - name: Include themepark tasks
+      when: not sonarr_themepark_container_result.exists
+      ansible.builtin.include_tasks: 'sub_tasks/themepark.yml'
+
+################################
 # CONTAINER
 ################################
 
@@ -255,14 +271,10 @@
     name: '{{ sonarr_basics_name }}'
     image: '{{ sonarr_basics_image_repo }}:{{ sonarr_basics_image_tag }}'
     networks: '{{ sonarr_docker_networks }}'
-    env:
-      PUID: '{{ sonarr_env_puid }}'
-      PGID: '{{ sonarr_env_pgid }}'
-      TZ: '{{ sonarr_env_timezone }}'
+    env: '{{ sonarr_docker_envs }}'
     ports:
       - '{{ sonarr_ports_host }}:{{ sonarr_ports_cont }}'
     volumes: '{{ sonarr_docker_volumes }}'
-#    healthcheck:
     restart_policy: '{{ sonarr_basics_restart_policy }}'
 
 - name: Create sonarr traefik container
@@ -271,15 +283,11 @@
     name: '{{ sonarr_basics_name }}'
     image: '{{ sonarr_basics_image_repo }}:{{ sonarr_basics_image_tag }}'
     networks: '{{ sonarr_docker_networks }}'
-    env:
-      PUID: '{{ sonarr_env_puid }}'
-      PGID: '{{ sonarr_env_pgid }}'
-      TZ: '{{ sonarr_env_timezone }}'
+    env: '{{ sonarr_docker_envs }}'
     labels: '{{ sonarr_traefik_labels }}'
     ports:
       - '{{ sonarr_ports_host }}:{{ sonarr_ports_cont }}'
     volumes: '{{ sonarr_docker_volumes }}'
-#    healthcheck:
     restart_policy: '{{ sonarr_basics_restart_policy }}'
 
 ################################

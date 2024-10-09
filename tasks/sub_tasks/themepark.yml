@@ -1,0 +1,31 @@
+---
+
+################################
+# APPDATA
+################################
+
+- name: Create themepark appdata directory
+  ansible.builtin.file:
+    path: '{{ sonarr_themepark_paths_location }}'
+    state: directory
+    owner: '{{ sonarr_themepark_env_puid }}'
+    group: '{{ sonarr_themepark_env_pgid }}'
+    mode: '0755'
+
+################################
+# CONTAINER
+################################
+
+- name: Create themepark container
+  community.docker.docker_container:
+    name: '{{ sonarr_themepark_basics_name }}'
+    image: '{{ sonarr_themepark_basics_image_repo }}:{{ sonarr_themepark_basics_image_tag }}'
+    networks: '{{ sonarr_network_backend }}'
+    env:
+      PUID: '{{ sonarr_themepark_env_puid }}'
+      PGID: '{{ sonarr_themepark_env_pgid }}'
+      TZ: '{{ sonarr_themepark_env_timezone }}'
+    ports:
+      - '{{ sonarr_themepark_ports_host }}:{{ sonarr_themepark_ports_cont }}'    
+    volumes: '{{ sonarr_themepark_bind_mount }}'
+    restart_policy: '{{ sonarr_themepark_basics_restart_policy }}'

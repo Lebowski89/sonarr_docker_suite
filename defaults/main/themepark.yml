@@ -1,0 +1,51 @@
+---
+
+################################
+# BASICS
+################################
+
+sonarr_themepark_basics_name: 'theme-park'
+sonarr_themepark_basics_image_repo: 'ghcr.io/themepark-dev/theme.park'
+sonarr_themepark_basics_image_tag: 'latest'
+sonarr_themepark_basics_restart_policy: 'unless-stopped'
+
+################################
+# ENV
+################################
+
+sonarr_themepark_env_timezone: ''
+sonarr_themepark_env_puid: ''
+sonarr_themepark_env_pgid: ''
+
+################################
+# DOMAIN (LOCAL)
+################################
+
+  ## Fill if wanting themes served locally via http on local network.
+  ## Will deploy theme-park in a docker container.
+  ## Must be accessible to your browser - try: '<local_machine_ip>:{{ sonarr_themepark_ports_host }}'
+
+sonarr_themepark_domain_local: ''
+
+################################
+# PORTS
+################################
+
+sonarr_themepark_ports_host: '8089'
+sonarr_themepark_ports_cont: '80'
+
+################################
+# PATHS
+################################
+
+sonarr_themepark_paths_folder: '{{ sonarr_themepark_basics_name }}'
+sonarr_themepark_paths_location: '/opt/{{ sonarr_themepark_paths_folder }}'
+
+################################
+# BINDS
+################################
+
+sonarr_themepark_bind_mount:
+  - '{{ sonarr_themepark_paths_location }}:/config'
+
+

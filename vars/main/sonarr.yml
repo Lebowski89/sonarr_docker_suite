@@ -40,10 +40,33 @@ sonarr_network_backend_is_enabled: '{{ (sonarr_network_backend_driver is defined
                                        (sonarr_network_backend_subnet | trim | length > 0) }}'
 
 ################################
+# ENV
+################################
+
+sonarr_env_default:
+  PUID: '{{ sonarr_env_puid }}'
+  PGID: '{{ sonarr_env_pgid }}'
+  TZ: '{{ sonarr_env_timezone }}'
+
+sonarr_env_themepark_local:
+  TP_SCHEME: 'http'
+  TP_DOMAIN: '{{ sonarr_themepark_domain_local }}'
+  TP_HOTIO: 'true'
+  TP_THEME: '{{ sonarr_theme }}'
+
+sonarr_docker_envs: '{{ sonarr_env_default
+                        | combine((sonarr_env_themepark_local
+                                   if sonarr_themepark_local_is_enabled
+                                   else [])) }}'
+
+################################
 # BINDS
 ################################
 
 sonarr_docker_volumes: '{{ sonarr_volumes_binds_default
+                           + (sonarr_volumes_binds_themepark
+                              if sonarr_themepark_local_is_enabled
+                              else [])
                            + (sonarr_nfs_media_bind
                               if sonarr_nfs_media_volume_is_enabled
                               else [])
@@ -98,8 +121,8 @@ sonarr_traefik_labels_router_secure:
   traefik.http.routers.sonarr-api-rtr-secure.tls.options: 'tls-opts@file'
 
 sonarr_traefik_labels_themepark:
-  traefik.http.middlewares.themepark-portainer.plugin.themepark.app: '{{ sonarr_basics_name }}'
-  traefik.http.middlewares.themepark-portainer.plugin.themepark.theme: '{{ sonarr_traefik_themepark_theme }}'
+  traefik.http.middlewares.themepark-sonarr.plugin.themepark.app: 'sonarr'
+  traefik.http.middlewares.themepark-sonarr.plugin.themepark.theme: '{{ sonarr_theme }}'
 
 sonarr_traefik_labels: '{{ sonarr_traefik_labels_default
                            | combine(sonarr_traefik_labels_router)
@@ -127,3 +150,20 @@ sonarr_cloudflare_zone: '{{ sonarr_traefik_domain }}'
 sonarr_cloudflare_is_enabled: '{{ (sonarr_cloudflare_api_token is defined) and
                                   (sonarr_cloudflare_api_token is not none) and
                                   (sonarr_cloudflare_api_token | trim | length > 0) }}'
+
+################################
+# THEME
+################################
+
+sonarr_themepark_local_is_enabled: '{{ (sonarr_themepark_env_timezone is defined) and
+                                       (sonarr_themepark_env_timezone is not none) and
+                                       (sonarr_themepark_env_timezone | trim | length > 0) and
+                                       (sonarr_themepark_env_puid is defined) and
+                                       (sonarr_themepark_env_puid is not none) and
+                                       (sonarr_themepark_env_puid | trim | length > 0) and
+                                       (sonarr_themepark_env_pgid is defined) and
+                                       (sonarr_themepark_env_pgid is not none) and
+                                       (sonarr_themepark_env_pgid | trim | length > 0) and
+                                       (sonarr_themepark_domain_local is defined) and
+                                       (sonarr_themepark_domain_local is not none) and
+                                       (sonarr_themepark_domain_local | trim | length > 0) }}'

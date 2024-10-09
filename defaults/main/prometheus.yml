@@ -57,7 +57,7 @@ sonarr_prometheus_binds_data_mapping:
 
 sonarr_prometheus_traefik_subdomain: '{{ sonarr_prometheus_basics_name }}'
 sonarr_prometheus_traefik_domain: ''
-sonarr_prometheus_traefik_network: 'traefik_proxy'
+sonarr_prometheus_traefik_network: '{{ sonarr_traefik_network }}'
 sonarr_prometheus_traefik_port: '9090'
 
 ################################
