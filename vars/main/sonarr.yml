@@ -52,7 +52,7 @@ sonarr_env_themepark_local:
   TP_SCHEME: 'http'
   TP_DOMAIN: '{{ sonarr_themepark_domain_local }}'
   TP_HOTIO: 'true'
-  TP_THEME: '{{ sonarr_theme }}'
+  TP_THEME: '{{ sonarr_theme_local }}'
 
 sonarr_docker_envs: '{{ sonarr_env_default
                         | combine((sonarr_env_themepark_local
@@ -93,7 +93,7 @@ sonarr_traefik_labels_default:
 sonarr_traefik_labels_router:
   traefik.http.routers.sonarr-rtr.entrypoints: 'http'
   traefik.http.routers.sonarr-rtr.rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`)'
-  traefik.http.routers.sonarr-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.sonarr-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker,cloudflarewarp@docker'
   traefik.http.routers.sonarr-rtr.priority: '20'
   traefik.http.routers.sonarr-rtr.service: 'sonarr-rtr-svc'
   traefik.http.services.sonarr-rtr-svc.loadbalancer.server.port: '{{ sonarr_traefik_port }}'
@@ -106,14 +106,14 @@ sonarr_traefik_labels_router:
 sonarr_traefik_labels_router_secure:
   traefik.http.routers.sonarr-rtr-secure.entrypoints: 'https'
   traefik.http.routers.sonarr-rtr-secure.rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`)'
-  traefik.http.routers.sonarr-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.sonarr-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker,cloudflarewarp@docker,themepark-sonarr'
   traefik.http.routers.sonarr-rtr-secure.priority: '20'
   traefik.http.routers.sonarr-rtr-secure.service: 'sonarr-rtr-secure-svc'
   traefik.http.routers.sonarr-rtr-secure.tls.certresolver: 'dns-cloudflare'
   traefik.http.routers.sonarr-rtr-secure.tls.options: 'tls-opts@file'
   traefik.http.services.sonarr-rtr-secure-svc.loadbalancer.server.port: '{{ sonarr_traefik_port }}'
   traefik.http.routers.sonarr-api-rtr-secure.entrypoints: 'https'
-  traefik.http.routers.sonarr-api-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file'
+  traefik.http.routers.sonarr-api-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,cloudflarewarp@docker'
   traefik.http.routers.sonarr-api-rtr-secure.priority: '30'
   traefik.http.routers.sonarr-api-rtr-secure.rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`) && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
   traefik.http.routers.sonarr-api-rtr-secure.service: 'sonarr-rtr-secure-svc'
@@ -122,7 +122,7 @@ sonarr_traefik_labels_router_secure:
 
 sonarr_traefik_labels_themepark:
   traefik.http.middlewares.themepark-sonarr.plugin.themepark.app: 'sonarr'
-  traefik.http.middlewares.themepark-sonarr.plugin.themepark.theme: '{{ sonarr_theme }}'
+  traefik.http.middlewares.themepark-sonarr.plugin.themepark.theme: '{{ sonarr_theme_traefik }}'
 
 sonarr_traefik_labels: '{{ sonarr_traefik_labels_default
                            | combine(sonarr_traefik_labels_router)
