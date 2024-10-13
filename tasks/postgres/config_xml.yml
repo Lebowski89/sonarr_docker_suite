@@ -103,7 +103,7 @@
 - name: Clean sonarr appdir
   block:
     - name: Remove sqlite database files
-      when: sonarr_postgres_clean_files
+      when: sonarr_toggles_clean_files
       ansible.builtin.file:
         path: '{{ sonarr_paths_location }}/{{ item }}'
         state: absent
@@ -116,7 +116,7 @@
         - sonarr.db-wal
 
     - name: Remove sqlite backups folder
-      when: sonarr_postgres_clean_folders
+      when: sonarr_toggles_clean_folders
       ansible.builtin.file:
         path: '{{ sonarr_paths_location }}/Backups'
         state: absent

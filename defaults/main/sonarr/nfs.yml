@@ -1,0 +1,34 @@
+---
+
+################################
+# ENV
+################################
+
+sonarr_nfs_env_puid: '1000'
+sonarr_nfs_env_pgid: '1000'
+
+################################
+# AUTOFS
+################################
+
+sonarr_autofs_mount_host_address: ''
+sonarr_autofs_mount_remote_path: ''
+sonarr_autofs_mount_local_dir_name: ''
+sonarr_autofs_mount_opt: '-fstype=nfs,port=2049,rw,timeo=100,noatime'
+
+################################
+# DOCKER VOLUME
+################################
+
+sonarr_nfs_volume_name: ''
+sonarr_nfs_volume_address: ''
+sonarr_nfs_volume_device: ''
+sonarr_nfs_volume_permissions: 'rw'
+sonarr_nfs_volume_version: '4'
+
+################################
+# BINDS
+################################
+
+sonarr_nfs_volume_bind:
+  - '{{ sonarr_nfs_volume_name }}:/data'

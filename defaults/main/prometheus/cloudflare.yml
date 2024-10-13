@@ -1,0 +1,9 @@
+---
+
+################################
+# DNS
+################################
+
+sonarr_prometheus_cloudflare_record_type: 'A'  ## A (IPV4), AAAA (IPV6), CNAME, etc
+sonarr_prometheus_cloudflare_proxy: 'true'  ## true for cloudflare DNS SSL
+sonarr_prometheus_cloudflare_api_token: ''

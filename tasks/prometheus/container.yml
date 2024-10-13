@@ -59,7 +59,28 @@
   register: sonarr_prometheus_container_result
 
 - name: Create prometheus container
-  when: not sonarr_prometheus_container_result.exists
+  when: 
+    - not sonarr_prometheus_container_result.exists
+    - (not sonarr_toggles_enable_traefik) or (not sonarr_prometheus_traefik_is_enabled)
+  community.docker.docker_container:
+    name: '{{ sonarr_prometheus_basics_name }}'
+    image: '{{ sonarr_prometheus_basics_image_repo }}:{{ sonarr_prometheus_basics_image_tag }}'
+    networks: '{{ sonarr_prometheus_docker_networks }}'
+    command: '{{ sonarr_prometheus_commands | reject("equalto", omit) | list }}'
+    env:
+      PUID: '{{ sonarr_prometheus_env_puid }}'
+      PGID: '{{ sonarr_prometheus_env_pgid }}'
+      TZ: '{{ sonarr_prometheus_env_timezone }}'
+    ports:
+      - '{{ sonarr_prometheus_ports_host }}:{{ sonarr_prometheus_ports_cont }}'
+    volumes: '{{ sonarr_prometheus_volumes_binds }}'
+    restart_policy: '{{ sonarr_prometheus_basics_restart_policy }}'
+
+- name: Create prometheus traefik container
+  when: 
+    - not sonarr_prometheus_container_result.exists
+    - sonarr_toggles_enable_traefik
+    - sonarr_prometheus_traefik_is_enabled
   community.docker.docker_container:
     name: '{{ sonarr_prometheus_basics_name }}'
     image: '{{ sonarr_prometheus_basics_image_repo }}:{{ sonarr_prometheus_basics_image_tag }}'

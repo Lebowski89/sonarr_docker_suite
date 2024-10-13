@@ -13,19 +13,18 @@ sonarr_themepark_basics_restart_policy: 'unless-stopped'
 # ENV
 ################################
 
-sonarr_themepark_env_timezone: ''
-sonarr_themepark_env_puid: ''
-sonarr_themepark_env_pgid: ''
+sonarr_themepark_env_timezone: 'Etc/UTC'
+sonarr_themepark_env_puid: '1000'
+sonarr_themepark_env_pgid: '1000'
 
 ################################
 # DOMAIN (LOCAL)
 ################################
 
-  ## Fill if wanting themes served locally via http on local network.
-  ## Will deploy theme-park in a docker container.
   ## Must be accessible to your browser - try: '<local_machine_ip>:{{ sonarr_themepark_ports_host }}'
 
 sonarr_themepark_domain_local: ''
+sonarr_themepark_domain_local_theme: 'hotline'  ## theme to use for local theme-park deployment
 
 ################################
 # PORTS

@@ -7,15 +7,6 @@
 sonarr_postgres_is_enabled: '{{ (sonarr_postgres_basics_host is defined) and
                                 (sonarr_postgres_basics_host is not none) and
                                 (sonarr_postgres_basics_host | trim | length > 0) and
-                                (sonarr_postgres_env_timezone is defined) and
-                                (sonarr_postgres_env_timezone is not none) and
-                                (sonarr_postgres_env_timezone | trim | length > 0) and
-                                (sonarr_postgres_env_puid is defined) and
-                                (sonarr_postgres_env_puid is not none) and
-                                (sonarr_postgres_env_puid | trim | length > 0) and
-                                (sonarr_postgres_env_pgid is defined) and
-                                (sonarr_postgres_env_pgid is not none) and
-                                (sonarr_postgres_env_pgid | trim | length > 0) and
                                 (sonarr_postgres_auth_user is defined) and
                                 (sonarr_postgres_auth_user is not none) and
                                 (sonarr_postgres_auth_user | trim | length > 0) and

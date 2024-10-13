@@ -1,7 +1,9 @@
 ---
 
 - name: Perform autofs media mount tasks
-  when: sonarr_autofs_media_mount_is_enabled
+  when:
+    - sonarr_toggles_enable_nfs_autofs
+    - sonarr_autofs_mount_is_enabled
   block:
     - name: Install autofs
       when: ansible_os_family == 'Debian'
@@ -33,7 +35,7 @@
     - name: Add mount to auto.nfsdb file
       ansible.builtin.lineinfile:
         dest: '{{ sonarr_autofs_nfsdb_file }}'
-        line: '{{ sonarr_autofs_media_mount_local_dir_name }} {{ sonarr_autofs_media_mount_opt }} {{ sonarr_autofs_media_mount_host_address }}:{{ sonarr_autofs_media_mount_remote_path }}'
+        line: '{{ sonarr_autofs_mount_local_dir_name }} {{ sonarr_autofs_mount_opt }} {{ sonarr_autofs_mount_host_address }}:{{ sonarr_autofs_mount_remote_path }}'
         state: present
         create: true
         owner: '{{ sonarr_nfs_env_puid }}'
@@ -43,15 +45,17 @@
         - redo mounts
 
 - name: Create sonarr nfs media volume
-  when: sonarr_nfs_media_volume_is_enabled
+  when: 
+    - sonarr_toggles_enable_nfs_volume
+    - sonarr_nfs_volume_is_enabled
   block:
-    - name: Create sonarr media nfs volume
+    - name: Create sonarr nfs volume
       community.docker.docker_volume:
-        volume_name: '{{ sonarr_nfs_media_name }}'
+        volume_name: '{{ sonarr_nfs_volume_name }}'
         state: present
         recreate: options-changed
         driver: local
         driver_options:
           type: nfs
-          o: 'addr={{ sonarr_nfs_media_address }},{{ sonarr_nfs_media_permissions }},nfsvers={{ sonarr_nfs_media_version }}'
-          device: '{{ sonarr_nfs_media_device }}'
+          o: 'addr={{ sonarr_nfs_volume_address }},{{ sonarr_nfs_volume_permissions }},nfsvers={{ sonarr_nfs_volume_version }}'
+          device: '{{ sonarr_nfs_volume_device }}'

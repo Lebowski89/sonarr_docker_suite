@@ -5,6 +5,7 @@
 ################################
 
 - name: Install prerequisite apt packages
+  when: sonarr_toggles_enable_apt_packages
   ansible.builtin.apt:
     pkg:
       - python3-requests
@@ -22,7 +23,9 @@
 ################################
 
 - name: Apt install docker if required
-  when: ansible_os_family == 'Debian'
+  when:
+    - sonarr_toggles_enable_docker_install
+    - ansible_os_family == 'Debian'
   block:
     - name: Gather apt facts
       ansible.builtin.package_facts:
@@ -67,7 +70,7 @@
 
     - name: Sonarr network backend builtin fail
       ansible.builtin.fail:
-        msg: Sonarr backend network does not exist nor is it enabled. Ensure the Sonarr backend network variables contain valid entries.
+        msg: sonarr backend network does not exist nor is it enabled. Ensure the sonarr backend network variables contain valid entries.
       when:
         - not sonarr_net_backend_result.exists
         - not sonarr_network_backend_is_enabled
@@ -146,13 +149,16 @@
       register: xml_sonarr_external
 
     - name: Register authelia container
-      when: sonarr_authelia_is_enabled
+      when: 
+        - sonarr_toggles_enable_authelia
+        - sonarr_authelia_is_enabled
       community.docker.docker_container_info:
         name: '{{ sonarr_authelia_name }}'
       register: sonarr_authelia_container_result
 
     - name: Sonarr config.xml | change auth method to external  ## prevents double login when using authelia
       when:
+        - sonarr_toggles_enable_authelia
         - sonarr_authelia_is_enabled
         - sonarr_authelia_container_result.exists
         - ((xml_sonarr_external.matches[0].AuthenticationMethod is defined) and (xml_sonarr_external.matches[0].AuthenticationMethod != 'External'))
@@ -166,23 +172,25 @@
 ################################
 
 - name: Include postgres container tasks
-  when: sonarr_postgres_is_enabled
-  ansible.builtin.include_tasks: postgres/postgres_container.yml
+  when: sonarr_toggles_enable_postgres
+  ansible.builtin.include_tasks: postgres/container.yml
 
 - name: Include postgres database tasks
-  when: sonarr_postgres_is_enabled
-  ansible.builtin.include_tasks: postgres/postgres_database.yml
+  when: sonarr_toggles_enable_postgres
+  ansible.builtin.include_tasks: postgres/database.yml
 
 - name: Include postgres sonarr config.xml tasks
-  when: sonarr_postgres_is_enabled
-  ansible.builtin.include_tasks: postgres/postgres_config_xml.yml
+  when: sonarr_toggles_enable_postgres
+  ansible.builtin.include_tasks: postgres/config_xml.yml
 
 ################################
 # TRAEFIK
 ################################
 
 - name: Conduct traefik tasks
-  when: sonarr_traefik_is_enabled
+  when: 
+    - sonarr_toggles_enable_traefik
+    - sonarr_traefik_is_enabled
   block:
     - name: Register traefik network
       community.docker.docker_network_info:
@@ -209,7 +217,9 @@
 ################################
 
 - name: Include cloudflare tasks
-  when: sonarr_cloudflare_is_enabled
+  when: 
+    - sonarr_toggles_enable_cloudflare_dns
+    - sonarr_cloudflare_is_enabled
   ansible.builtin.include_tasks: sub_tasks/cloudflare.yml
 
 ################################
@@ -224,7 +234,7 @@
 ################################
 
 - name: Include rclone tasks
-  when: sonarr_rclone_qbittorrent_is_enabled
+  when: sonarr_toggles_enable_rclone
   ansible.builtin.include_tasks: sub_tasks/rclone.yml
 
 ################################
@@ -232,25 +242,25 @@
 ################################
 
 - name: Include prometheus container tasks
-  when: sonarr_prometheus_is_enabled
-  ansible.builtin.include_tasks: prometheus/prometheus_container.yml
+  when: sonarr_toggles_enable_metrics
+  ansible.builtin.include_tasks: prometheus/container.yml
 
 - name: Include prometheus exporter tasks
-  when:
-    - sonarr_prometheus_is_enabled
-    - sonarr_prometheus_exporter_is_enabled
-  ansible.builtin.include_tasks: prometheus/prometheus_exporter.yml
+  when: sonarr_toggles_enable_metrics
+  ansible.builtin.include_tasks: prometheus/exporter.yml
 
 - name: Include prometheus cloudflare tasks
-  when: sonarr_prometheus_is_enabled
-  ansible.builtin.include_tasks: prometheus/prometheus_cloudflare.yml
+  when: 
+    - sonarr_toggles_enable_metrics
+    - sonarr_prometheus_cloudflare_is_enabled
+  ansible.builtin.include_tasks: prometheus/cloudflare.yml
 
 ################################
 # THEMEPARK
 ################################
 
 - name: Run themepark tasks
-  when: sonarr_themepark_local_is_enabled
+  when: sonarr_toggles_enable_themepark_local
   block:
     - name: Register themepark container
       community.docker.docker_container_info:
@@ -266,7 +276,7 @@
 ################################
 
 - name: Create sonarr container
-  when: not sonarr_traefik_is_enabled
+  when: (not sonarr_toggles_enable_traefik) or (not sonarr_traefik_is_enabled)
   community.docker.docker_container:
     name: '{{ sonarr_basics_name }}'
     image: '{{ sonarr_basics_image_repo }}:{{ sonarr_basics_image_tag }}'
@@ -278,7 +288,9 @@
     restart_policy: '{{ sonarr_basics_restart_policy }}'
 
 - name: Create sonarr traefik container
-  when: sonarr_traefik_is_enabled
+  when:
+    - sonarr_toggles_enable_traefik
+    - sonarr_traefik_is_enabled
   community.docker.docker_container:
     name: '{{ sonarr_basics_name }}'
     image: '{{ sonarr_basics_image_repo }}:{{ sonarr_basics_image_tag }}'
@@ -295,5 +307,6 @@
 ################################
 
 - name: Include recyclarr tasks
-  when: sonarr_recyclarr_is_enabled
+  tags: recyclarr
+  when: sonarr_toggles_enable_recyclarr
   ansible.builtin.include_tasks: sub_tasks/recyclarr.yml

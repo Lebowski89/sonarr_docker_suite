@@ -15,16 +15,16 @@ sonarr_postgres_basics_restart_policy: 'unless-stopped'
 ################################
 
 sonarr_postgres_network: 'postgres'
-sonarr_postgres_network_driver: ''  ## only required if network doesn't exist
+sonarr_postgres_network_driver: 'bridge'  ## only required if network doesn't exist
 sonarr_postgres_network_subnet: ''  ## only required if network doesn't exist
 
 ################################
 # ENV
 ################################
 
-sonarr_postgres_env_timezone: ''
-sonarr_postgres_env_puid: ''
-sonarr_postgres_env_pgid: ''
+sonarr_postgres_env_timezone: 'Etc/UTC'
+sonarr_postgres_env_puid: '1000'
+sonarr_postgres_env_pgid: '1000'
 
 ################################
 # PORTS
@@ -58,7 +58,7 @@ sonarr_postgres_binds_keys_mapping:
 
 sonarr_postgres_auth_user: ''
 sonarr_postgres_auth_password: ''
-sonarr_postgres_auth_password_file: 'postgres_key.txt'
+sonarr_postgres_auth_password_file: 'postgres_key.txt'  ## will be created by role 
 
 ################################
 # DATABASE
@@ -66,13 +66,3 @@ sonarr_postgres_auth_password_file: 'postgres_key.txt'
 
 sonarr_postgres_database_main: 'sonarr-main'
 sonarr_postgres_database_log: 'sonarr-log'
-
-################################
-# CLEAN
-################################
-
-  ## warning: the below toggles will delete any existing sqlite database files in the sonarr appdir.
-  ## toggle false if you're planning to migrate db data. See: https://wiki.servarr.com/sonarr/postgres-setup
-
-sonarr_postgres_clean_files: false  # true will delete any existing sqlite database files in the sonarr appdir.
-sonarr_postgres_clean_folders: false  # true will delete sqlite backups folder in the sonarr appdir.
