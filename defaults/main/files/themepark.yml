@@ -47,4 +47,3 @@ sonarr_themepark_paths_location: '/opt/{{ sonarr_themepark_paths_folder }}'
 sonarr_themepark_bind_mount:
   - '{{ sonarr_themepark_paths_location }}:/config'
 
-

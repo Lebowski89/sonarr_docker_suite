@@ -4,10 +4,10 @@
 # BASICS
 ################################
 
-sonarr_prometheus_exporter_name: '{{ sonarr_basics_name }}_exporter'
-sonarr_prometheus_exporter_image_repo: 'ghcr.io/onedr0p/exportarr'
-sonarr_prometheus_exporter_image_tag: 'v2.0.1'
-sonarr_prometheus_exporter_restart_policy: 'unless-stopped'
+sonarr_prometheus_exporter_basics_name: '{{ sonarr_basics_name }}-exporter'
+sonarr_prometheus_exporter_basics_image_repo: 'ghcr.io/onedr0p/exportarr'
+sonarr_prometheus_exporter_basics_image_tag: 'v2.0.1'
+sonarr_prometheus_exporter_basics_restart_policy: 'unless-stopped'
 
 ################################
 # ENV
@@ -21,5 +21,6 @@ sonarr_prometheus_exporter_env_pgid: '1000'
 # PORTS
 ################################
 
-sonarr_prometheus_exporter_host_port: '9707'
-sonarr_prometheus_exporter_cont_port: '9707'
+sonarr_prometheus_exporter_ports_host: '9707'
+sonarr_prometheus_exporter_ports_cont: '9707'
+

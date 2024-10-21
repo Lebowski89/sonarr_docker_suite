@@ -39,8 +39,7 @@ sonarr_postgres_ports_cont: '5432'
 
 sonarr_postgres_paths_folder: '{{ sonarr_postgres_basics_name }}'  # name of postgres folder
 sonarr_postgres_paths_location: '/opt/{{ sonarr_postgres_paths_folder }}' # path of postgres folder
-sonarr_postgres_paths_keys_folder: 'keys'
-sonarr_postgres_paths_keys_location: '{{ sonarr_postgres_paths_location }}/{{ sonarr_postgres_paths_keys_folder }}'
+sonarr_postgres_paths_keys_location: '{{ sonarr_postgres_paths_location }}/keys'
 
 ################################
 # BINDS
@@ -66,3 +65,7 @@ sonarr_postgres_auth_password_file: 'postgres_key.txt'  ## will be created by ro
 
 sonarr_postgres_database_main: 'sonarr-main'
 sonarr_postgres_database_log: 'sonarr-log'
+
+
+
+

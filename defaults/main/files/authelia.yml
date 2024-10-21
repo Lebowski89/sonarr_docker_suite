@@ -1,0 +1,7 @@
+---
+
+################################
+# AUTHELIA
+################################
+
+sonarr_authelia_container_name: 'authelia'

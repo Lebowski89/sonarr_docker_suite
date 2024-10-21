@@ -2,32 +2,63 @@
 
 - name: Create recyclarr appdata directory
   ansible.builtin.file:
-    path: '{{ sonarr_recyclarr_paths_location }}'
+    path: '{{ lookup("vars", role_prefix + "_recyclarr_paths_location") }}'
     state: directory
-    owner: '{{ sonarr_recyclarr_env_puid }}'
-    group: '{{ sonarr_recyclarr_env_pgid }}'
+    owner: '{{ lookup("vars", role_prefix + "_recyclarr_env_puid") }}'
+    group: '{{ lookup("vars", role_prefix + "_recyclarr_env_pgid") }}'
     mode: '0755'
 
-- name: Insert sonarr's recyclarr secrets settings
+- name: Check config exists
+  ansible.builtin.stat:
+    path: '{{ lookup("vars", role_prefix + "_recyclarr_paths_location") }}/recyclarr.yml'
+  register: sonarr_recyclarr_config
+
+- name: Generate default config
+  when: not sonarr_recyclarr_config.stat.exists
+  community.docker.docker_container:
+    name: recyclarr-config
+    image: '{{ lookup("vars", role_prefix + "_recyclarr_basics_image_repo") }}:{{ lookup("vars", role_prefix + "_recyclarr_basics_image_tag") }}'
+    pull: true
+    state: started
+    container_default_behavior: compatibility
+    networks: '{{ lookup("vars", role_prefix + "_network_default_bind") }}'
+    env:
+      RECYCLARR_CREATE_CONFIG: 'true'
+    user: '{{ lookup("vars", role_prefix + "_recyclarr_env_puid") }}:{{ lookup("vars", role_prefix + "_recyclarr_env_pgid") }}'
+    volumes: '{{ lookup("vars", role_prefix + "_recyclarr_bind_mount") }}'
+    cleanup: true
+
+- name: Remove config container
+  community.docker.docker_container:
+    container_default_behavior: compatibility
+    name: recyclarr-config
+    state: absent
+    stop_timeout: 10
+  register: sonarr_remove_recyclarr_config_container
+  retries: 5
+  delay: 10
+  until: sonarr_remove_recyclarr_config_container is succeeded
+
+- name: Insert recyclarr secrets settings
   ansible.builtin.blockinfile:
-    path: '{{ sonarr_recyclarr_paths_location }}/secrets.yml'
+    path: '{{ lookup("vars", role_prefix + "_recyclarr_paths_location") }}/secrets.yml'
     marker: "## {mark} ANSIBLE SONARR MANAGED BLOCK ##"
-    owner: '{{ sonarr_recyclarr_env_puid }}'
-    group: '{{ sonarr_recyclarr_env_pgid }}'
+    owner: '{{ lookup("vars", role_prefix + "_recyclarr_env_puid") }}'
+    group: '{{ lookup("vars", role_prefix + "_recyclarr_env_pgid") }}'
     mode: '0664'
     create: true
     block: |
-      sonarr_base_url: http://{{ sonarr_basics_name }}:{{ sonarr_ports_cont }}
-      sonarr_api_key: {{ sonarr_api_key }}
+      sonarr_base_url: http://{{ lookup("vars", role_prefix + "_basics_name") }}:{{ lookup("vars", role_prefix + "_ports_cont") }}
+      sonarr_api_key: {{ lookup("vars", role_prefix + "_api_key") }}
   notify:
     - restart recyclarr
 
 - name: Insert sonarr's recyclarr config settings
   ansible.builtin.blockinfile:  ## these are settings I use. Yours may differ. See: https://recyclarr.dev/wiki/
-    path: '{{ sonarr_recyclarr_paths_location }}/recyclarr.yml'
+    path: '{{ lookup("vars", role_prefix + "_recyclarr_paths_location") }}/configs/sonarr.yml'
     marker: "## {mark} ANSIBLE SONARR MANAGED BLOCK ##"
-    owner: '{{ sonarr_recyclarr_env_puid }}'
-    group: '{{ sonarr_recyclarr_env_pgid }}'
+    owner: '{{ lookup("vars", role_prefix + "_recyclarr_env_puid") }}'
+    group: '{{ lookup("vars", role_prefix + "_recyclarr_env_pgid") }}'
     mode: '0664'
     create: true
     block: |
@@ -162,7 +193,7 @@
                 - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
                 - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
                 - d0c516558625b04b363fa6c5c2c7cfd4 # WEB Scene
-              assign_scores_to:
+              quality_profiles:
                 - name: "WEB-DL (1080p)"
                 - name: "UK"
   notify:
@@ -170,20 +201,18 @@
 
 - name: Register recyclarr container
   community.docker.docker_container_info:
-    name: '{{ sonarr_recyclarr_basics_name }}'
+    name: '{{ lookup("vars", role_prefix + "_recyclarr_basics_name") }}'
   register: sonarr_recyclarr_container_result
 
 - name: Create recyclarr container
   when: not sonarr_recyclarr_container_result.exists
   community.docker.docker_container:
-    name: '{{ sonarr_recyclarr_basics_name }}'
-    image: '{{ sonarr_recyclarr_basics_image_repo }}:{{ sonarr_recyclarr_basics_image_tag }}'
-    networks: '{{ sonarr_network_default }}'
+    name: '{{ lookup("vars", role_prefix + "_recyclarr_basics_name") }}'
+    image: '{{ lookup("vars", role_prefix + "_recyclarr_basics_image_repo") }}:{{ lookup("vars", role_prefix + "_recyclarr_basics_image_tag") }}'
+    networks: '{{ lookup("vars", role_prefix + "_network_default_bind") }}'
     env:
-      PUID: '{{ sonarr_recyclarr_env_puid }}'
-      PGID: '{{ sonarr_recyclarr_env_pgid }}'
-      TZ: '{{ sonarr_recyclarr_env_timezone }}'
+      TZ: '{{ lookup("vars", role_prefix + "_recyclarr_env_timezone") }}'
       CRON_SCHEDULE: '@daily'
-      RECYCLARR_CREATE_CONFIG: 'false'
-    volumes: '{{ sonarr_recyclarr_bind_mount }}'
-    restart_policy: '{{ sonarr_recyclarr_basics_restart_policy }}'
+    user: '{{ lookup("vars", role_prefix + "_recyclarr_env_puid") }}:{{ lookup("vars", role_prefix + "_recyclarr_env_pgid") }}'
+    volumes: '{{ lookup("vars", role_prefix + "_recyclarr_bind_mount") }}'
+    restart_policy: '{{ lookup("vars", role_prefix + "_recyclarr_basics_restart_policy") }}'

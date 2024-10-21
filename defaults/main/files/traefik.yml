@@ -1,0 +1,72 @@
+---
+
+################################
+# DOMAIN
+################################
+
+  ## sonarr
+sonarr_traefik_subdomain: '{{ sonarr_basics_name }}'
+sonarr_traefik_domain: ''
+sonarr_traefik_port: '{{ sonarr_ports_cont }}'
+
+  ## prometheus
+sonarr_prometheus_traefik_subdomain: '{{ sonarr_prometheus_basics_name }}'
+sonarr_prometheus_traefik_domain: '{{ sonarr_traefik_domain }}'
+sonarr_prometheus_traefik_port: '{{ sonarr_prometheus_ports_cont }}'
+
+################################
+# NETWORK
+################################
+
+sonarr_traefik_network: 'traefik_proxy'
+sonarr_traefik_network_driver: 'bridge'  ## only required if network doesn't exist
+sonarr_traefik_network_subnet: ''  ## only required if network doesn't exist
+
+################################
+# TLS
+################################
+
+sonarr_traefik_tls_certresolver: 'dns-cloudflare'
+sonarr_traefik_tls_options: 'tls-opts@file'
+
+################################
+# ROUTER (HTTP)
+################################
+
+  ## sonarr
+sonarr_traefik_http_middlewares: 'globalHeaders@file,redirect-to-https@docker,autodetect@docker,gzip@docker,robotHeaders@file'
+sonarr_traefik_http_rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`)'
+sonarr_traefik_http_priority: '20'
+
+sonarr_traefik_http_api_middlewares: 'globalHeaders@file,redirect-to-https@docker,autodetect@docker,gzip@docker,robotHeaders@file'
+sonarr_traefik_http_api_rule: '{{ sonarr_traefik_http_rule }} && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
+sonarr_traefik_http_api_priority: '30'
+
+  ## prometheus
+sonarr_prometheus_traefik_http_middlewares: '{{ sonarr_traefik_http_middlewares }}'
+sonarr_prometheus_traefik_http_rule: 'Host(`{{ sonarr_prometheus_traefik_subdomain }}.{{ sonarr_prometheus_traefik_domain }}`)'
+sonarr_prometheus_traefik_http_priority: '{{ sonarr_traefik_http_priority }}'
+
+################################
+# ROUTER (HTTPS)
+################################
+
+  ## sonarr
+sonarr_traefik_https_middlewares: 'globalHeaders@file,secureHeaders@file,autodetect@docker,gzip@docker,robotHeaders@file,hsts@file'
+sonarr_traefik_https_rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefik_domain }}`)'
+sonarr_traefik_https_priority: '20'
+
+sonarr_traefik_https_api_middlewares: 'globalHeaders@file,secureHeaders@file,autodetect@docker,gzip@docker,robotHeaders@file,hsts@file'
+sonarr_traefik_https_api_rule: '{{ sonarr_traefik_https_rule }} && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
+sonarr_traefik_https_api_priority: '30'
+
+  ## prometheus
+sonarr_prometheus_traefik_https_middlewares: '{{ sonarr_traefik_https_middlewares }}'
+sonarr_prometheus_traefik_https_rule: 'Host(`{{ sonarr_prometheus_traefik_subdomain }}.{{ sonarr_prometheus_traefik_domain }}`)'
+sonarr_prometheus_traefik_https_priority: '{{ sonarr_traefik_https_priority }}'
+
+################################
+# THEME-PARK
+################################
+
+sonarr_traefik_themepark_theme: 'hotpink'
