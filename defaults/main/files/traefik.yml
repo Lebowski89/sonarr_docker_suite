@@ -39,7 +39,7 @@ sonarr_traefik_http_rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traefi
 sonarr_traefik_http_priority: '20'
 
 sonarr_traefik_http_api_middlewares: 'globalHeaders@file,redirect-to-https@docker,autodetect@docker,gzip@docker,robotHeaders@file'
-sonarr_traefik_http_api_rule: '{{ sonarr_traefik_http_rule }} && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
+sonarr_traefik_http_api_rule: '{{ sonarr_traefik_http_rule + " && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))" }}'
 sonarr_traefik_http_api_priority: '30'
 
   ## prometheus
@@ -57,7 +57,7 @@ sonarr_traefik_https_rule: 'Host(`{{ sonarr_traefik_subdomain }}.{{ sonarr_traef
 sonarr_traefik_https_priority: '20'
 
 sonarr_traefik_https_api_middlewares: 'globalHeaders@file,secureHeaders@file,autodetect@docker,gzip@docker,robotHeaders@file,hsts@file'
-sonarr_traefik_https_api_rule: '{{ sonarr_traefik_https_rule }} && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
+sonarr_traefik_https_api_rule: '{{ sonarr_traefik_https_rule + " && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))" }}'
 sonarr_traefik_https_api_priority: '30'
 
   ## prometheus
