@@ -3,7 +3,7 @@
 - name: Apply exporter prometheus scrape config
   ansible.builtin.blockinfile:
     path: '{{ lookup("vars", sonarr_prefix + "_prometheus_paths_location") }}/prometheus.yml'
-    marker: "# {mark} ANSIBLE MANAGED BLOCK - {{ sonarr_prefix }}-exporter #"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - {{ sonarr_basics_name }}-exporter #"
     block: |
       {% filter indent(width=2, first=true) %}
       - job_name: {{ lookup("vars", sonarr_prefix + "_prometheus_exporter_basics_name") }}
