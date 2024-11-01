@@ -1,0 +1,57 @@
+---
+
+################################
+# API
+################################
+
+sonarr_api_key: ''
+
+################################
+# BASICS
+################################
+
+sonarr_basics_name: 'sonarr'
+sonarr_basics_image_repo: 'ghcr.io/hotio/sonarr'
+sonarr_basics_image_tag: 'nightly'
+sonarr_basics_restart_policy: 'unless-stopped'
+
+################################
+# NETWORK
+################################
+
+  ## backend
+sonarr_network_backend: 'proxy'  ## allows backend docker communication between sonarr and companion apps
+sonarr_network_backend_driver: 'bridge'  ## only required if network doesn't exist
+sonarr_network_backend_subnet: ''  ## only required if network doesn't exist
+
+################################
+# ENV
+################################
+
+sonarr_env_timezone: 'Etc/UTC'
+sonarr_env_puid: '1000'
+sonarr_env_pgid: '1000'
+
+################################
+# PORTS
+################################
+
+sonarr_ports_host: '8989'
+sonarr_ports_cont: '8989'
+
+################################
+# PATHS
+################################
+
+sonarr_paths_folder: '{{ sonarr_basics_name }}'
+sonarr_paths_location: '/opt/{{ sonarr_paths_folder }}'
+
+################################
+# BINDS
+################################
+
+sonarr_volumes_binds_default:
+  - /etc/localtime:/etc/localtime:ro
+  - '{{ sonarr_paths_location }}:/config'
+sonarr_volumes_binds_themepark:  ## only binds if local themepark is deployed
+  - '{{ sonarr_themepark_paths_location }}/docker-mods/98-themepark-sonarr:/etc/cont-init.d/98-themepark'
